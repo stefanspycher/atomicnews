@@ -1,5 +1,0 @@
-# Add news indexing to build process
-scripts:
-  build:
-    - npm run lint
-    - node ./tools/news-indexer.js
