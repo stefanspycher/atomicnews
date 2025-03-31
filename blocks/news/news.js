@@ -17,12 +17,15 @@ export default function decorate(block) {
       const author = metadataCells[1].textContent.trim();
       
       // Format date
-      const date = new Date(publishDate);
-      const formattedDate = date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      });
+      let formattedDate = 'No date';
+      if (publishDate) {
+        const date = new Date(publishDate);
+        formattedDate = date.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        });
+      }
       
       metadataDiv.innerHTML = `
         <span class="news-date">${formattedDate}</span>

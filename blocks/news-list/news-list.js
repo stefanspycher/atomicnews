@@ -1,8 +1,74 @@
 import { createOptimizedPicture } from '../../scripts/aem.js';
 
-async function fetchNewsIndex() {
-  const response = await fetch('/news-index.json');
-  return response.json();
+/**
+ * Fetches all news articles from the content directory
+ */
+async function fetchNewsArticles() {
+  // Get the index of news articles
+  const resp = await fetch('/news.json');
+  if (!resp.ok) return [];
+  
+  const json = await resp.json();
+  
+  // Process each news article
+  const articles = await Promise.all(json.data.map(async (item) => {
+    // Get the full news article content
+    const articleResp = await fetch(`${item.path}.json`);
+    if (!articleResp.ok) return null;
+    
+    const article = await articleResp.json();
+    
+    // Extract metadata from the article
+    const metadata = {};
+    
+    // Find the metadata table
+    let metadataTable = null;
+    if (article.data) {
+      for (const section of article.data) {
+        if (section.type === 'table') {
+          metadataTable = section;
+          break;
+        }
+      }
+    }
+    
+    if (metadataTable && metadataTable.data) {
+      metadataTable.data.forEach(row => {
+        if (row.length >= 2) {
+          const key = row[0].trim();
+          const value = row[1].trim();
+          
+          if (key === 'PublishDate') {
+            metadata.publishDate = new Date(value);
+          } else if (key === 'Tags') {
+            metadata.tags = value.split(',').map(tag => tag.trim());
+          } else if (key === 'Uplevel') {
+            metadata.uplevel = value.toLowerCase() === 'yes';
+          } else {
+            metadata[key.toLowerCase()] = value;
+          }
+        }
+      });
+    }
+    
+    // Get the article title and images
+    const title = article.title || item.title;
+    const images = article.images || [];
+    
+    return {
+      title,
+      path: item.path,
+      publishDate: metadata.publishDate,
+      author: metadata.author,
+      team: metadata.team,
+      uplevel: metadata.uplevel,
+      tags: metadata.tags,
+      thumbnail: images.length > 0 ? images[0] : null
+    };
+  }));
+  
+  // Filter out null values (failed fetches)
+  return articles.filter(Boolean);
 }
 
 function createDateFilter(earliest, latest, container) {
@@ -15,8 +81,10 @@ function createDateFilter(earliest, latest, container) {
   const startDate = document.createElement('input');
   startDate.type = 'date';
   startDate.id = 'filter-start-date';
-  startDate.min = earliest.toISOString().split('T')[0];
-  startDate.max = latest.toISOString().split('T')[0];
+  if (earliest) {
+    startDate.min = earliest.toISOString().split('T')[0];
+    startDate.max = latest.toISOString().split('T')[0];
+  }
   
   // Create end date input
   const endLabel = document.createElement('label');
@@ -24,9 +92,11 @@ function createDateFilter(earliest, latest, container) {
   const endDate = document.createElement('input');
   endDate.type = 'date';
   endDate.id = 'filter-end-date';
-  endDate.min = earliest.toISOString().split('T')[0];
-  endDate.max = latest.toISOString().split('T')[0];
-  endDate.value = latest.toISOString().split('T')[0];
+  if (latest) {
+    endDate.min = earliest.toISOString().split('T')[0];
+    endDate.max = latest.toISOString().split('T')[0];
+    endDate.value = latest.toISOString().split('T')[0];
+  }
   
   dateFilter.appendChild(startLabel);
   dateFilter.appendChild(startDate);
@@ -123,10 +193,10 @@ function createUplevelFilter(container) {
 function filterArticles(articles, filters) {
   return articles.filter(article => {
     // Filter by date range
-    if (filters.startDate && new Date(article.publishDate) < filters.startDate) {
+    if (filters.startDate && article.publishDate && new Date(article.publishDate) < filters.startDate) {
       return false;
     }
-    if (filters.endDate && new Date(article.publishDate) > filters.endDate) {
+    if (filters.endDate && article.publishDate && new Date(article.publishDate) > filters.endDate) {
       return false;
     }
     
@@ -174,12 +244,15 @@ function renderNewsCard(article) {
   metadata.className = 'news-metadata';
   
   // Format date
-  const date = new Date(article.publishDate);
-  const formattedDate = date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
+  let formattedDate = 'No date';
+  if (article.publishDate) {
+    const date = new Date(article.publishDate);
+    formattedDate = date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  }
   
   metadata.innerHTML = `
     <span class="news-date">${formattedDate}</span>
@@ -215,22 +288,53 @@ function renderNewsCard(article) {
 }
 
 export default async function decorate(block) {
-  // Fetch news index
-  const newsIndex = await fetchNewsIndex();
-  const { articles, tags, teams, dateRange } = newsIndex;
+  // Fetch news articles in real-time
+  const articles = await fetchNewsArticles();
+  
+  // Extract unique tags and teams
+  const tags = {};
+  const teams = {};
+  let earliest = null;
+  let latest = null;
+  
+  articles.forEach(article => {
+    // Process tags
+    if (article.tags) {
+      article.tags.forEach(tag => {
+        tags[tag] = (tags[tag] || 0) + 1;
+      });
+    }
+    
+    // Process teams
+    if (article.team) {
+      teams[article.team] = (teams[article.team] || 0) + 1;
+    }
+    
+    // Process dates
+    if (article.publishDate) {
+      const date = new Date(article.publishDate);
+      if (!earliest || date < earliest) earliest = date;
+      if (!latest || date > latest) latest = date;
+    }
+  });
   
   // Create filter container
   const filterContainer = document.createElement('div');
   filterContainer.className = 'news-filters';
   
   // Create individual filters
-  const dateInputs = createDateFilter(
-    new Date(dateRange.earliest), 
-    new Date(dateRange.latest),
-    filterContainer
-  );
-  const tagSelect = createTagFilter(tags, filterContainer);
-  const teamSelect = createTeamFilter(teams, filterContainer);
+  const dateInputs = earliest && latest ? 
+    createDateFilter(earliest, latest, filterContainer) : 
+    { startDate: null, endDate: null };
+    
+  const tagSelect = Object.keys(tags).length > 0 ?
+    createTagFilter(tags, filterContainer) :
+    null;
+    
+  const teamSelect = Object.keys(teams).length > 0 ?
+    createTeamFilter(teams, filterContainer) :
+    null;
+    
   const uplevelCheckbox = createUplevelFilter(filterContainer);
   
   // Add filter button
@@ -246,7 +350,7 @@ export default async function decorate(block) {
   // Initial rendering with no filters
   let currentFilters = {
     startDate: null,
-    endDate: new Date(dateRange.latest),
+    endDate: latest || null,
     team: '',
     tags: [],
     uplevelOnly: false
@@ -255,10 +359,14 @@ export default async function decorate(block) {
   function applyFilters() {
     // Update current filters
     currentFilters = {
-      startDate: dateInputs.startDate.value ? new Date(dateInputs.startDate.value) : null,
-      endDate: dateInputs.endDate.value ? new Date(dateInputs.endDate.value) : null,
-      team: teamSelect.value,
-      tags: Array.from(tagSelect.selectedOptions).map(option => option.value).filter(Boolean),
+      startDate: dateInputs.startDate && dateInputs.startDate.value ? 
+        new Date(dateInputs.startDate.value) : null,
+      endDate: dateInputs.endDate && dateInputs.endDate.value ? 
+        new Date(dateInputs.endDate.value) : null,
+      team: teamSelect ? teamSelect.value : '',
+      tags: tagSelect ? 
+        Array.from(tagSelect.selectedOptions).map(option => option.value).filter(Boolean) : 
+        [],
       uplevelOnly: uplevelCheckbox.checked
     };
     
@@ -275,9 +383,11 @@ export default async function decorate(block) {
       newsContainer.appendChild(noResults);
     } else {
       // Sort by publish date (newest first)
-      filteredArticles.sort((a, b) => 
-        new Date(b.publishDate) - new Date(a.publishDate)
-      );
+      filteredArticles.sort((a, b) => {
+        if (!a.publishDate) return 1;
+        if (!b.publishDate) return -1;
+        return new Date(b.publishDate) - new Date(a.publishDate);
+      });
       
       filteredArticles.forEach(article => {
         newsContainer.appendChild(renderNewsCard(article));
