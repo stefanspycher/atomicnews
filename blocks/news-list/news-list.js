@@ -4,71 +4,84 @@ import { createOptimizedPicture } from '../../scripts/aem.js';
  * Fetches all news articles from the content directory
  */
 async function fetchNewsArticles() {
-  // Get the index of news articles
-  const resp = await fetch('/news.json');
-  if (!resp.ok) return [];
-  
-  const json = await resp.json();
-  
-  // Process each news article
-  const articles = await Promise.all(json.data.map(async (item) => {
-    // Get the full news article content
-    const articleResp = await fetch(`${item.path}.json`);
-    if (!articleResp.ok) return null;
-    
-    const article = await articleResp.json();
-    
-    // Extract metadata from the article
-    const metadata = {};
-    
-    // Find the metadata table
-    let metadataTable = null;
-    if (article.data) {
-      for (const section of article.data) {
-        if (section.type === 'table') {
-          metadataTable = section;
-          break;
-        }
-      }
+  try {
+    // Get the index of news articles
+    const resp = await fetch('/news.json');
+    if (!resp.ok) {
+      console.log('News index not available. Make sure you have news articles in your Google Drive /news folder.');
+      return [];
     }
     
-    if (metadataTable && metadataTable.data) {
-      metadataTable.data.forEach(row => {
-        if (row.length >= 2) {
-          const key = row[0].trim();
-          const value = row[1].trim();
-          
-          if (key === 'PublishDate') {
-            metadata.publishDate = new Date(value);
-          } else if (key === 'Tags') {
-            metadata.tags = value.split(',').map(tag => tag.trim());
-          } else if (key === 'Uplevel') {
-            metadata.uplevel = value.toLowerCase() === 'yes';
-          } else {
-            metadata[key.toLowerCase()] = value;
+    const json = await resp.json();
+    
+    // Process each news article
+    const articles = await Promise.all(json.data.map(async (item) => {
+      try {
+        // Get the full news article content
+        const articleResp = await fetch(`${item.path}.json`);
+        if (!articleResp.ok) return null;
+        
+        const article = await articleResp.json();
+        
+        // Extract metadata from the article
+        const metadata = {};
+        
+        // Find the metadata table
+        let metadataTable = null;
+        if (article.data) {
+          for (const section of article.data) {
+            if (section.type === 'table') {
+              metadataTable = section;
+              break;
+            }
           }
         }
-      });
-    }
+        
+        if (metadataTable && metadataTable.data) {
+          metadataTable.data.forEach(row => {
+            if (row.length >= 2) {
+              const key = row[0].trim();
+              const value = row[1].trim();
+              
+              if (key === 'PublishDate') {
+                metadata.publishDate = new Date(value);
+              } else if (key === 'Tags') {
+                metadata.tags = value.split(',').map(tag => tag.trim());
+              } else if (key === 'Uplevel') {
+                metadata.uplevel = value.toLowerCase() === 'yes';
+              } else {
+                metadata[key.toLowerCase()] = value;
+              }
+            }
+          });
+        }
+        
+        // Get the article title and images
+        const title = article.title || item.title;
+        const images = article.images || [];
+        
+        return {
+          title,
+          path: item.path,
+          publishDate: metadata.publishDate,
+          author: metadata.author,
+          team: metadata.team,
+          uplevel: metadata.uplevel,
+          tags: metadata.tags,
+          thumbnail: images.length > 0 ? images[0] : null
+        };
+      } catch (error) {
+        console.error(`Error processing article ${item.path}:`, error);
+        return null;
+      }
+    }));
     
-    // Get the article title and images
-    const title = article.title || item.title;
-    const images = article.images || [];
-    
-    return {
-      title,
-      path: item.path,
-      publishDate: metadata.publishDate,
-      author: metadata.author,
-      team: metadata.team,
-      uplevel: metadata.uplevel,
-      tags: metadata.tags,
-      thumbnail: images.length > 0 ? images[0] : null
-    };
-  }));
-  
-  // Filter out null values (failed fetches)
-  return articles.filter(Boolean);
+    // Filter out null values (failed fetches)
+    return articles.filter(Boolean);
+  } catch (error) {
+    console.error('Error fetching news articles:', error);
+    return [];
+  }
 }
 
 function createDateFilter(earliest, latest, container) {
@@ -290,6 +303,18 @@ function renderNewsCard(article) {
 export default async function decorate(block) {
   // Fetch news articles in real-time
   const articles = await fetchNewsArticles();
+  
+  // If no articles are available, show a message
+  if (articles.length === 0) {
+    const noArticles = document.createElement('div');
+    noArticles.className = 'no-articles';
+    noArticles.innerHTML = `
+      <h3>No News Articles Available</h3>
+      <p>There are currently no news articles to display. News articles placed in the Google Drive 'news' folder will appear here automatically.</p>
+    `;
+    block.appendChild(noArticles);
+    return;
+  }
   
   // Extract unique tags and teams
   const tags = {};
