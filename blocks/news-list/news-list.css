@@ -1,0 +1,116 @@
+.news-filters {
+    margin-bottom: 24px;
+    padding: 16px;
+    background-color: var(--light-color);
+    border-radius: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  
+  .news-filters > div {
+    margin-right: 16px;
+  }
+  
+  .date-filter, .tag-filter, .team-filter {
+    display: flex;
+    align-items: center;
+  }
+  
+  .date-filter input, .tag-filter select, .team-filter select {
+    margin-left: 8px;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  .uplevel-filter {
+    display: flex;
+    align-items: center;
+  }
+  
+  .uplevel-filter label {
+    margin-left: 8px;
+  }
+  
+  .filter-button {
+    margin-left: auto;
+  }
+  
+  .news-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 24px;
+  }
+  
+  .news-card {
+    border: 1px solid #eee;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+  }
+  
+  .news-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  }
+  
+  .news-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+  }
+  
+  .news-card-content {
+    padding: 16px;
+  }
+  
+  .news-card h3 {
+    margin-top: 0;
+    font-size: var(--heading-font-size-s);
+  }
+  
+  .news-metadata {
+    margin: 8px 0;
+    font-size: var(--body-font-size-xs);
+    color: var(--dark-color);
+  }
+  
+  .news-metadata span {
+    margin-right: 12px;
+  }
+  
+  .news-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  
+  .news-tag {
+    background-color: var(--light-color);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: var(--body-font-size-xs);
+  }
+  
+  .no-results {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 40px;
+    background-color: var(--light-color);
+    border-radius: 8px;
+  }
+  
+  @media (width < 768px) {
+    .news-filters {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    
+    .filter-button {
+      margin-left: 0;
+      width: 100%;
+    }
+  }
