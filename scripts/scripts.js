@@ -14,6 +14,29 @@ import {
 } from './aem.js';
 
 /**
+export async function lookupBlogs(pathnames) {
+  if (!window.blogIndex) {
+    const resp = await fetch(`${window.hlx.codeBasePath}/news/query-index.json`);
+    const json = await resp.json();
+    const lookup = {};
+    json.data.forEach((row) => {
+      lookup[row.path] = row;
+      if (row.image.startsWith('/default-meta-image.png')) {
+        row.image = getRandomDefaultImage();
+      } else {
+        row.image = `/${window.hlx.codeBasePath}${row.image}`;
+      }
+    });
+    window.blogIndex = {
+      data: json.data,
+      lookup,
+    };
+  }
+  const result = pathnames.map((path) => window.blogIndex.lookup[path]).filter((e) => e);
+  return (result);
+}
+ */
+/**
  * Builds hero block and prepends to main in a new section.
  * @param {Element} main The container element
  */
