@@ -63,10 +63,6 @@ export default async function decorate(block) {
         const contentElement = document.createElement('div');
         contentElement.className = 'article-content';
         
-        // Create container for metadata
-        const metadataElement = document.createElement('div');
-        metadataElement.className = 'article-metadata';
-        
         // Fetch the article content
         const articleResp = await fetch(`${article.path}.plain.html`);
         if (articleResp.ok) {
@@ -84,16 +80,45 @@ export default async function decorate(block) {
             h2.id = h1.id;
             h2.className = 'article-title';
             h1.parentNode.replaceChild(h2, h1);
-          }
-          
-          // Extract the metadata table if it exists
-          const table = tempDiv.querySelector('table');
-          if (table) {
-            // Move table to the metadata element
-            metadataElement.appendChild(table);
             
-            // Add a class to style the table
-            table.className = 'metadata-table';
+            // Add metadata display after the title
+            const metadataDisplay = document.createElement('div');
+            metadataDisplay.className = 'article-meta-display';
+            
+            // Create metadata content
+            let metadataHTML = '';
+            
+            // Author and team
+            if (article.author || article.team) {
+              metadataHTML += `<span class="meta-author-team">${article.author || ''}${article.author && article.team ? ' / ' : ''}${article.team || ''}</span>`;
+            }
+            
+            // Publish date
+            if (article.publishdate) {
+              metadataHTML += `<span class="meta-date">${article.publishdate}</span>`;
+            }
+            
+            // Tags
+            if (article.tags) {
+              let tags = [];
+              try {
+                tags = JSON.parse(article.tags);
+              } catch (e) {
+                // If parsing fails, try treating it as a comma-separated string
+                tags = article.tags.split(',').map(tag => tag.trim());
+              }
+              
+              if (tags.length > 0) {
+                metadataHTML += '<span class="meta-tags">';
+                tags.forEach(tag => {
+                  metadataHTML += `<span class="meta-tag-pill">${tag}</span>`;
+                });
+                metadataHTML += '</span>';
+              }
+            }
+            
+            metadataDisplay.innerHTML = metadataHTML;
+            h2.after(metadataDisplay);
           }
           
           // Set the processed content
@@ -102,22 +127,9 @@ export default async function decorate(block) {
           contentElement.innerHTML = '<p>Unable to load article content.</p>';
         }
         
-        // Add date if available
-        if (article.date) {
-          const dateElement = document.createElement('div');
-          dateElement.className = 'article-date';
-          dateElement.textContent = new Date(article.date).toLocaleDateString();
-          articleElement.appendChild(dateElement);
-        }
-        
         // Assemble article
         if (imageElement) articleElement.appendChild(imageElement);
         articleElement.appendChild(contentElement);
-        
-        // Add metadata if it contains content
-        if (metadataElement.children.length > 0) {
-          articleElement.appendChild(metadataElement);
-        }
         
         // Add article to container
         newsContainer.appendChild(articleElement);

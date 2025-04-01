@@ -218,3 +218,42 @@ pre code:empty {
     width: 100%;
   }
 }
+/* Metadata styling */
+.article-meta-display {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 8px 0 16px 0;
+  font-size: var(--body-font-size-xs);
+  color: var(--dark-color);
+  align-items: center;
+}
+
+.meta-author-team {
+  font-weight: 500;
+}
+
+.meta-date {
+  color: var(--dark-color-muted, #666);
+}
+
+.meta-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.meta-tag-pill {
+  background-color: var(--highlight-color, #0066ff);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: var(--body-font-size-xxs, 12px);
+  font-weight: 500;
+}
+
+/* Remove empty pre/code elements */
+pre:empty, 
+pre code:empty {
+  display: none;
+}
