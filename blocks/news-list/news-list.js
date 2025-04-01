@@ -1,7 +1,35 @@
 export default async function decorate(block) {
+  // Create layout toggle
+  const toggleContainer = document.createElement('div');
+  toggleContainer.className = 'layout-toggle';
+  
+  const gridButton = document.createElement('button');
+  gridButton.className = 'grid-view-btn active';
+  gridButton.innerHTML = '<span>Grid View</span>';
+  
+  const listButton = document.createElement('button');
+  listButton.className = 'list-view-btn';
+  listButton.innerHTML = '<span>List View</span>';
+  
+  toggleContainer.appendChild(gridButton);
+  toggleContainer.appendChild(listButton);
+  
   // Create container for news articles
   const newsContainer = document.createElement('div');
-  newsContainer.className = 'news-container';
+  newsContainer.className = 'news-container grid-view';
+  
+  // Add event listeners for the toggle buttons
+  gridButton.addEventListener('click', () => {
+    newsContainer.className = 'news-container grid-view';
+    gridButton.className = 'grid-view-btn active';
+    listButton.className = 'list-view-btn';
+  });
+  
+  listButton.addEventListener('click', () => {
+    newsContainer.className = 'news-container list-view';
+    listButton.className = 'list-view-btn active';
+    gridButton.className = 'grid-view-btn';
+  });
   
   try {
     // Get the paths of all news articles
@@ -19,11 +47,6 @@ export default async function decorate(block) {
         const articleElement = document.createElement('div');
         articleElement.className = 'news-article';
         
-        // Create article header with title
-        const header = document.createElement('h2');
-        header.className = 'article-title';
-        header.textContent = article.title || 'Untitled Article';
-        
         // Create article image if available
         let imageElement = '';
         if (article.image && article.image !== '') {
@@ -40,11 +63,41 @@ export default async function decorate(block) {
         const contentElement = document.createElement('div');
         contentElement.className = 'article-content';
         
+        // Create container for metadata
+        const metadataElement = document.createElement('div');
+        metadataElement.className = 'article-metadata';
+        
         // Fetch the article content
         const articleResp = await fetch(`${article.path}.plain.html`);
         if (articleResp.ok) {
           const articleHTML = await articleResp.text();
-          contentElement.innerHTML = articleHTML;
+          
+          // Create a temporary element to parse the HTML
+          const tempDiv = document.createElement('div');
+          tempDiv.innerHTML = articleHTML;
+          
+          // Change the h1 element to h2 and add the article-title class
+          const h1 = tempDiv.querySelector('h1');
+          if (h1) {
+            const h2 = document.createElement('h2');
+            h2.innerHTML = h1.innerHTML;
+            h2.id = h1.id;
+            h2.className = 'article-title';
+            h1.parentNode.replaceChild(h2, h1);
+          }
+          
+          // Extract the metadata table if it exists
+          const table = tempDiv.querySelector('table');
+          if (table) {
+            // Move table to the metadata element
+            metadataElement.appendChild(table);
+            
+            // Add a class to style the table
+            table.className = 'metadata-table';
+          }
+          
+          // Set the processed content
+          contentElement.innerHTML = tempDiv.innerHTML;
         } else {
           contentElement.innerHTML = '<p>Unable to load article content.</p>';
         }
@@ -58,16 +111,13 @@ export default async function decorate(block) {
         }
         
         // Assemble article
-        articleElement.appendChild(header);
         if (imageElement) articleElement.appendChild(imageElement);
         articleElement.appendChild(contentElement);
         
-        // Add read more link
-        const readMoreLink = document.createElement('a');
-        readMoreLink.href = article.path;
-        readMoreLink.className = 'read-more';
-        readMoreLink.textContent = 'Read full article';
-        articleElement.appendChild(readMoreLink);
+        // Add metadata if it contains content
+        if (metadataElement.children.length > 0) {
+          articleElement.appendChild(metadataElement);
+        }
         
         // Add article to container
         newsContainer.appendChild(articleElement);
@@ -78,7 +128,8 @@ export default async function decorate(block) {
     newsContainer.innerHTML = `<p>Error loading news articles: ${error.message}</p>`;
   }
   
-  // Replace block content with our news container
+  // Replace block content with our toggle and news container
   block.textContent = '';
+  block.appendChild(toggleContainer);
   block.appendChild(newsContainer);
 }

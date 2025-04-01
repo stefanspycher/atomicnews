@@ -1,135 +1,220 @@
+.layout-toggle {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+}
+
+.layout-toggle button {
+  background-color: var(--light-color);
+  border: 1px solid #ccc;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.layout-toggle button:first-child {
+  border-radius: 4px 0 0 4px;
+}
+
+.layout-toggle button:last-child {
+  border-radius: 0 4px 4px 0;
+}
+
+.layout-toggle button.active {
+  background-color: var(--dark-color);
+  color: white;
+}
+
+/* Grid view styling */
+.news-container.grid-view {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.news-container.grid-view .news-article {
+  border: 1px solid #eee;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+}
+
+.news-container.grid-view .news-article:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.news-container.grid-view .article-image img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.news-container.grid-view .article-content {
+  padding: 16px;
+}
+
+/* List view styling */
+.news-container.list-view {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+}
+
+.news-container.list-view .news-article {
+  display: block;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+  width: 100%;
+  cursor: pointer;
+}
+
+.news-container.list-view .news-article:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.news-container.list-view .article-content {
+  padding: 16px;
+  width: 100%;
+}
+
+/* Fix for content divs inside article-content */
+.news-container.list-view .article-content > div {
+  width: 100%;
+}
+
+/* Remove any fixed width constraints on article content */
+.news-container.list-view .article-content,
+.news-container.list-view .article-content > div,
+.news-container.list-view .article-content p {
+  max-width: none;
+  width: 100%;
+}
+
+/* Content styling */
+.news-article h2 {
+  margin-top: 0;
+  font-size: var(--heading-font-size-s);
+}
+
+.article-date {
+  margin: 8px 0;
+  font-size: var(--body-font-size-xs);
+  color: var(--dark-color);
+}
+
+.article-metadata {
+  margin-top: 16px;
+  font-size: var(--body-font-size-xs);
+}
+
+.metadata-table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.metadata-table td {
+  padding: 4px 8px;
+  border: 1px solid #eee;
+}
+
+.metadata-table td:first-child {
+  font-weight: bold;
+  width: 120px;
+}
+
+/* Remove empty pre/code elements */
+pre:empty, 
+pre code:empty {
+  display: none;
+}
+
+/* News filters */
 .news-filters {
-    margin-bottom: 24px;
-    padding: 16px;
-    background-color: var(--light-color);
-    border-radius: 8px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
+  margin-bottom: 24px;
+  padding: 16px;
+  background-color: var(--light-color);
+  border-radius: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.news-filters > div {
+  margin-right: 16px;
+}
+
+.date-filter, .tag-filter, .team-filter {
+  display: flex;
+  align-items: center;
+}
+
+.date-filter input, .tag-filter select, .team-filter select {
+  margin-left: 8px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.uplevel-filter {
+  display: flex;
+  align-items: center;
+}
+
+.uplevel-filter label {
+  margin-left: 8px;
+}
+
+.filter-button {
+  margin-left: auto;
+}
+
+/* No results states */
+.no-results {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 40px;
+  background-color: var(--light-color);
+  border-radius: 8px;
+}
+
+.no-articles {
+  text-align: center;
+  padding: 40px;
+  background-color: var(--light-color);
+  border-radius: 8px;
+  margin: 20px 0;
+}
+
+.no-articles h3 {
+  margin-top: 0;
+  color: var(--dark-color);
+}
+
+.no-articles p {
+  color: var(--dark-color);
+  max-width: 600px;
+  margin: 10px auto;
+}
+
+/* Responsive adjustments */
+@media (width < 768px) {
+  .layout-toggle {
+    justify-content: center;
   }
   
-  .news-filters > div {
-    margin-right: 16px;
-  }
-  
-  .date-filter, .tag-filter, .team-filter {
-    display: flex;
-    align-items: center;
-  }
-  
-  .date-filter input, .tag-filter select, .team-filter select {
-    margin-left: 8px;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-  }
-  
-  .uplevel-filter {
-    display: flex;
-    align-items: center;
-  }
-  
-  .uplevel-filter label {
-    margin-left: 8px;
+  .news-filters {
+    flex-direction: column;
+    align-items: flex-start;
   }
   
   .filter-button {
-    margin-left: auto;
-  }
-  
-  .news-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 24px;
-  }
-  
-  .news-card {
-    border: 1px solid #eee;
-    border-radius: 8px;
-    overflow: hidden;
-    transition: transform 0.2s, box-shadow 0.2s;
-    cursor: pointer;
-  }
-  
-  .news-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-  }
-  
-  .news-card img {
+    margin-left: 0;
     width: 100%;
-    height: 200px;
-    object-fit: cover;
   }
-  
-  .news-card-content {
-    padding: 16px;
-  }
-  
-  .news-card h3 {
-    margin-top: 0;
-    font-size: var(--heading-font-size-s);
-  }
-  
-  .news-metadata {
-    margin: 8px 0;
-    font-size: var(--body-font-size-xs);
-    color: var(--dark-color);
-  }
-  
-  .news-metadata span {
-    margin-right: 12px;
-  }
-  
-  .news-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 12px;
-  }
-  
-  .news-tag {
-    background-color: var(--light-color);
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: var(--body-font-size-xs);
-  }
-  
-  .no-results {
-    grid-column: 1 / -1;
-    text-align: center;
-    padding: 40px;
-    background-color: var(--light-color);
-    border-radius: 8px;
-  }
-  
-  .no-articles {
-    text-align: center;
-    padding: 40px;
-    background-color: var(--light-color);
-    border-radius: 8px;
-    margin: 20px 0;
-  }
-  
-  .no-articles h3 {
-    margin-top: 0;
-    color: var(--dark-color);
-  }
-  
-  .no-articles p {
-    color: var(--dark-color);
-    max-width: 600px;
-    margin: 10px auto;
-  }
-  
-  @media (width < 768px) {
-    .news-filters {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-    
-    .filter-button {
-      margin-left: 0;
-      width: 100%;
-    }
-  }
+}
