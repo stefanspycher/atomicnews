@@ -424,3 +424,94 @@ pre code:empty {
     font-size: 12pt;
   }
 }
+
+/* blocks/news-list/news-list.css */
+/* Updated layout toggle styling */
+.layout-toggle.toggle-group {
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px;
+  max-width: max-content;
+  margin-left: auto;
+  margin-right: 0;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.layout-toggle.toggle-group button {
+  background-color: transparent;
+  border: none;
+  border-radius: 5px;
+  padding: 8px 16px;
+  margin: 0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #666;
+  font-weight: 500;
+}
+
+.layout-toggle.toggle-group button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.layout-toggle.toggle-group button.active {
+  background-color: var(--link-color, #3b63fb);
+  color: white;
+}
+
+.layout-toggle.toggle-group .grid-view-btn {
+  color: var(--dark-color);
+}
+
+.layout-toggle.toggle-group .list-view-btn {
+  color: var(--dark-color);
+}
+
+.layout-toggle.toggle-group .newsletter-view-btn {
+  color: var(--dark-color);
+}
+
+.layout-toggle.toggle-group .grid-view-btn.active,
+.layout-toggle.toggle-group .list-view-btn.active,
+.layout-toggle.toggle-group .newsletter-view-btn.active {
+  color: white;
+}
+
+/* Maintain existing layout toggle styles for backward compatibility */
+.layout-toggle {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+}
+
+.layout-toggle button {
+  background-color: var(--light-color);
+  border: 1px solid #ccc;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.layout-toggle button:first-child {
+  border-radius: 4px 0 0 4px;
+}
+
+.layout-toggle button:last-child {
+  border-radius: 0 4px 4px 0;
+}
+
+.layout-toggle button.active {
+  background-color: var(--dark-color);
+  color: white;
+}
+
+/* Media query for smaller screens */
+@media (width < 768px) {
+  .layout-toggle.toggle-group {
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
