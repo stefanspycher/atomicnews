@@ -93,7 +93,7 @@
 
 .newsletter-section {
   margin-bottom: 40px;
-  border-bottom: 1px solid #eee;
+  border-bottom: none;/*1px solid #eee;*/
   padding-bottom: 20px;
 }
 
@@ -106,7 +106,7 @@
   font-size: var(--heading-font-size-m);
   margin-bottom: 20px;
   padding-bottom: 8px;
-  border-bottom: 2px solid var(--dark-color);
+  border-bottom: none; /*2px solid var(--dark-color);*/
 }
 
 .newsletter-group {
@@ -118,13 +118,13 @@
   margin-bottom: 16px;
   color: var(--dark-color);
   padding: 4px 0;
-  border-bottom: 1px dashed #ccc;
+  border-bottom: none /*1px dashed #ccc;*/
 }
 
 .newsletter-article {
   margin-bottom: 24px;
   padding-bottom: 24px;
-  border-bottom: 1px solid #eee;
+  border-bottom: none; /*1px solid #eee;*/
 }
 
 .newsletter-article:last-child {
@@ -418,10 +418,6 @@ pre code:empty {
   .newsletter-article {
     break-inside: avoid;
     page-break-inside: avoid;
-  }
-  
-  .newsletter-article .read-more {
-    display: none;
   }
   
   body, html {

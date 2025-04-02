@@ -1,13 +1,57 @@
-import { createElement, formatMonthYear } from '../utils/dom-utils.js';
+import { createElement, formatMonthYear, createNoResultsMessage } from '../utils/dom-utils.js';
 import { createNewsletterArticle } from '../components/article-renderer.js';
 
 // Newsletter section definitions
 const NEWSLETTER_SECTIONS = [
   { id: 'intro', title: 'Introduction', sectionValue: 'introduction' },
-  { id: 'customer-focus', title: 'Customer Focus', sectionValue: 'CustomerFocus' },
+  { id: 'customer-focus', title: 'Customer Focus', sectionValue: 'customer-focus' },
   { id: 'highlights', title: 'Highlights', sectionValue: 'highlight', groupBy: 'team' },
   { id: 'events', title: 'Events', sectionValue: 'events' }
 ];
+
+/**
+ * Applies filters to articles for display, same as other views
+ * @param {Array} articles - All articles
+ * @param {Object} filterState - Current filter state
+ * @returns {Array} Filtered articles
+ */
+function applyFilters(articles, filterState) {
+  if (filterState.showAll) return articles;
+  
+  return articles.filter(article => {
+    // Check team filter
+    const teamMatch = !filterState.team || article.team === filterState.team;
+    
+    // Check tag filter
+    let tagMatch = !filterState.tag;
+    if (filterState.tag && article.tags) {
+      let articleTags = [];
+      try {
+        articleTags = JSON.parse(article.tags);
+      } catch (e) {
+        articleTags = article.tags.split(',').map(tag => tag.trim());
+      }
+      tagMatch = articleTags.includes(filterState.tag);
+    }
+    
+    // Check date filter using publishdate
+    let dateMatch = !filterState.date;
+    if (filterState.date && article.publishdate) {
+      try {
+        const date = new Date(article.publishdate);
+        if (!isNaN(date.getTime())) {
+          const monthYear = `${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}`;
+          dateMatch = monthYear === filterState.date;
+        }
+      } catch (e) {
+        console.error(`Error comparing dates for article ${article.path}`, e);
+      }
+    }
+    
+    // Only show article if it matches all selected filters
+    return teamMatch && tagMatch && dateMatch;
+  });
+}
 
 /**
  * Creates the newsletter structure
@@ -71,8 +115,14 @@ async function renderNewsletterSection(sectionContainer, articles, sectionConfig
       const groupContentEl = createElement('div', { className: 'group-content' });
       
       for (const article of groupArticles) {
-        const articleEl = await createNewsletterArticle(article);
-        groupContentEl.appendChild(articleEl);
+        try {
+          const articleEl = await createNewsletterArticle(article);
+          groupContentEl.appendChild(articleEl);
+        } catch (error) {
+          console.error(`Error rendering article ${article.path}:`, error);
+          groupContentEl.appendChild(createElement('p', { className: 'error' }, 
+            `Error rendering article: ${article.title || 'Unknown article'}`));
+        }
       }
       
       groupEl.appendChild(groupContentEl);
@@ -81,8 +131,14 @@ async function renderNewsletterSection(sectionContainer, articles, sectionConfig
   } else {
     // No grouping needed, just add articles
     for (const article of articles) {
-      const articleEl = await createNewsletterArticle(article);
-      sectionContainer.appendChild(articleEl);
+      try {
+        const articleEl = await createNewsletterArticle(article);
+        sectionContainer.appendChild(articleEl);
+      } catch (error) {
+        console.error(`Error rendering article ${article.path}:`, error);
+        sectionContainer.appendChild(createElement('p', { className: 'error' }, 
+          `Error rendering article: ${article.title || 'Unknown article'}`));
+      }
     }
   }
 }
@@ -97,34 +153,51 @@ export async function renderNewsletterView(container, newsData, filters) {
   // Create newsletter structure
   createNewsletterStructure(container);
   
-  // Get the most recent month from sortedMonths
-  const mostRecentMonth = newsData.metadata.months[0] || null;
+  // Set up filter change handler
+  filters.setOnChange(async (filterState) => {
+    await renderNewsletterView(container, newsData, filters);
+  });
   
-  // Set date filter to most recent month
-  if (mostRecentMonth && filters.elements.dateFilterElement) {
-    filters.setValues({
-      date: mostRecentMonth,
-      showAll: false
-    });
+  // Apply the same filters as other views
+  const filteredArticles = applyFilters(newsData.articles, filters.state);
+  
+  if (filteredArticles.length === 0) {
+    container.querySelector(`#${NEWSLETTER_SECTIONS[0].id} .section-content`)
+      .appendChild(createNoResultsMessage());
+    return;
   }
+  
+  // Add a diagnostic display for debugging
+  const diagnosticInfo = document.createElement('div');
+  diagnosticInfo.className = 'newsletter-diagnostic';
+  diagnosticInfo.style.display = 'none'; // Hidden by default
+  diagnosticInfo.innerHTML = `
+    <h3>Diagnostic Information (click to toggle)</h3>
+    <div class="diagnostic-content" style="display:none;">
+      <p>Total articles after filtering: ${filteredArticles.length}</p>
+      <ul>
+        ${filteredArticles.map(article => 
+          `<li>${article.title} - newsletter-section: "${article['newsletter-section'] || 'MISSING'}"</li>`
+        ).join('')}
+      </ul>
+    </div>
+  `;
+  
+  // Toggle diagnostic display on click
+  diagnosticInfo.querySelector('h3').addEventListener('click', () => {
+    const content = diagnosticInfo.querySelector('.diagnostic-content');
+    content.style.display = content.style.display === 'none' ? 'block' : 'none';
+  });
+  
+  container.appendChild(diagnosticInfo);
   
   // Process each section
   for (const section of NEWSLETTER_SECTIONS) {
     const sectionEl = container.querySelector(`#${section.id} .section-content`);
     
-    // Filter articles for this section and date
-    const sectionArticles = newsData.articles.filter(article => {
-      // Check if article has the correct newsletter-section value
-      const sectionMatch = article['newsletter-section'] === section.sectionValue;
-      
-      // Check date if we have a selected month
-      let dateMatch = true;
-      if (mostRecentMonth && article.publishdate) {
-        const articleMonthYear = formatMonthYear(article.publishdate);
-        dateMatch = articleMonthYear === mostRecentMonth;
-      }
-      
-      return sectionMatch && dateMatch;
+    // Filter articles for this section
+    const sectionArticles = filteredArticles.filter(article => {
+      return article['newsletter-section'] === section.sectionValue;
     });
     
     // Render section content

@@ -116,22 +116,15 @@ export async function createNewsletterArticle(article) {
   const articleEl = createElement('div', { className: 'newsletter-article' });
   
   // Add title
-  articleEl.appendChild(createElement('h4', {}, article.title || 'Untitled Article'));
+  //articleEl.appendChild(createElement('h4', {}, article.title || 'Untitled Article'));
   
   // Add metadata
-  articleEl.appendChild(createArticleMetadata(article));
+  //articleEl.appendChild(createArticleMetadata(article));
   
   // Add content container
   const contentEl = createElement('div', { className: 'newsletter-article-content' }, '<p>Loading content...</p>');
   articleEl.appendChild(contentEl);
-  
-  // Add a "Read More" link
-  const readMoreEl = createElement('a', { 
-    className: 'read-more',
-    href: article.path
-  }, 'Read More');
-  articleEl.appendChild(readMoreEl);
-  
+   
   // Load article content
   try {
     const content = await loadArticleContent(article.path);
