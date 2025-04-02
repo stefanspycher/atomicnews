@@ -1,3 +1,4 @@
+/* blocks/news-list/news-list.css */
 .layout-toggle {
   display: flex;
   justify-content: flex-end;
@@ -81,6 +82,86 @@
 .news-container.list-view .article-content {
   padding: 16px;
   width: 100%;
+}
+
+/* Newsletter view styling */
+.newsletter-container {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.newsletter-section {
+  margin-bottom: 40px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 20px;
+}
+
+.newsletter-section:last-child {
+  border-bottom: none;
+}
+
+.newsletter-section h2 {
+  color: var(--dark-color);
+  font-size: var(--heading-font-size-m);
+  margin-bottom: 20px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--dark-color);
+}
+
+.newsletter-group {
+  margin-bottom: 24px;
+}
+
+.newsletter-group h3 {
+  font-size: var(--heading-font-size-s);
+  margin-bottom: 16px;
+  color: var(--dark-color);
+  padding: 4px 0;
+  border-bottom: 1px dashed #ccc;
+}
+
+.newsletter-article {
+  margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #eee;
+}
+
+.newsletter-article:last-child {
+  border-bottom: none;
+}
+
+.newsletter-article h4 {
+  margin-top: 0;
+  font-size: var(--heading-font-size-xs);
+  color: var(--dark-color);
+}
+
+.newsletter-article-meta {
+  margin: 8px 0;
+  font-size: var(--body-font-size-xs);
+  color: var(--dark-color);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.newsletter-article-content {
+  margin: 12px 0;
+  font-size: var(--body-font-size-s);
+}
+
+.newsletter-article .read-more {
+  display: inline-block;
+  font-size: var(--body-font-size-xs);
+  font-weight: 500;
+  margin-top: 8px;
+  color: var(--link-color);
+  text-decoration: none;
+}
+
+.newsletter-article .read-more:hover {
+  text-decoration: underline;
 }
 
 /* Fix for content divs inside article-content */
@@ -217,7 +298,12 @@ pre code:empty {
     margin-left: 0;
     width: 100%;
   }
+  
+  .newsletter-container {
+    padding: 0 16px;
+  }
 }
+
 /* Metadata styling */
 .article-meta-display {
   display: flex;
@@ -252,11 +338,6 @@ pre code:empty {
   font-weight: 500;
 }
 
-/* Remove empty pre/code elements */
-pre:empty, 
-pre code:empty {
-  display: none;
-}
 /* Filter styles */
 .news-filters {
   display: flex;
@@ -309,14 +390,41 @@ pre code:empty {
   color: var(--dark-color, #666);
 }
 
-/* Responsive adjustments */
-@media (width < 768px) {
+/* Additional newsletter-specific styles */
+.section-content {
+  padding: 0 8px;
+}
+
+.group-content {
+  padding-left: 16px;
+}
+
+/* Newsletter print styles */
+@media print {
+  .layout-toggle,
   .news-filters {
-    flex-direction: column;
-    align-items: stretch;
+    display: none;
   }
   
-  .filter-select {
-    width: 100%;
+  .newsletter-container {
+    display: block !important;
+  }
+  
+  .newsletter-section {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  
+  .newsletter-article {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  
+  .newsletter-article .read-more {
+    display: none;
+  }
+  
+  body, html {
+    font-size: 12pt;
   }
 }
