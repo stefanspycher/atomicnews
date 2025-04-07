@@ -401,27 +401,110 @@ pre code:empty {
 
 /* Newsletter print styles */
 @media print {
+  /* Hide interactive elements */
   .layout-toggle,
-  .news-filters {
-    display: none;
+  .news-filters,
+  header,
+  footer,
+  .newsletter-diagnostic {
+    display: none !important;
   }
   
+  /* Hide default content wrapper containing page description and title */
+  .default-content-wrapper {
+    display: none !important;
+  }
+  
+  /* Hide the "News Collection" heading and description text */
+  h2#news-collection, 
+  p:has(+ h2#news-collection),
+  .default-content-wrapper p {
+    display: none !important;
+  }
+  
+  /* Ensure newsletter container is visible */
   .newsletter-container {
     display: block !important;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
   }
   
+  /* Add a print-only hero/header for the newsletter */
+  .newsletter-container::before {
+    content: "Team Newsletter";
+    display: block;
+    font-size: 24pt;
+    font-weight: bold;
+    text-align: center;
+    margin: 20px 0 30px;
+    border-bottom: 2px solid #000;
+    padding-bottom: 10px;
+  }
+  
+  /* Add page breaks and styling for sections */
   .newsletter-section {
     break-inside: avoid;
     page-break-inside: avoid;
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #ddd;
   }
   
+  /* Style newsletter section headers */
+  .newsletter-section h2 {
+    font-size: 18pt;
+    margin-top: 20px;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #333;
+    padding-bottom: 5px;
+  }
+  
+  /* Style group headers */
+  .newsletter-group h3 {
+    font-size: 14pt;
+    margin-top: 15px;
+    margin-bottom: 10px;
+  }
+  
+  /* Prevent article breaks */
   .newsletter-article {
     break-inside: avoid;
     page-break-inside: avoid;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
   }
   
+  /* Adjust content for print */
+  .newsletter-article-content {
+    font-size: 11pt;
+    line-height: 1.4;
+  }
+  
+  /* Set overall page typography */
   body, html {
     font-size: 12pt;
+    line-height: 1.5;
+    color: #000;
+    background: #fff;
+  }
+  
+  /* Remove any background colors */
+  * {
+    background-color: transparent !important;
+  }
+  
+  /* Add page margins */
+  @page {
+    margin: 2cm;
+  }
+  
+  /* Set page numbering */
+  @page {
+    @bottom-right {
+      content: "Page " counter(page);
+    }
   }
 }
 

@@ -2,11 +2,12 @@ import { createElement, formatMonthYear, createNoResultsMessage } from '../utils
 import { createNewsletterArticle } from '../components/article-renderer.js';
 
 // Newsletter section definitions
+// sectionValue must match with the metadata value for newsletter-section
 const NEWSLETTER_SECTIONS = [
   { id: 'intro', title: 'Introduction', sectionValue: 'introduction' },
   { id: 'customer-focus', title: 'Customer Focus', sectionValue: 'customer-focus' },
   { id: 'highlights', title: 'Highlights', sectionValue: 'highlight', groupBy: 'team' },
-  { id: 'events', title: 'Events', sectionValue: 'events' }
+  { id: 'events', title: 'Events', sectionValue: 'event' } 
 ];
 
 /**
