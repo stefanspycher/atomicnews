@@ -1,4 +1,4 @@
 mountpoints:
   # /: https://drive.google.com/drive/u/1/folders/1xP0vjLuEz4i0ivVV87exkd3hS0JraGDN
   # /news: https://drive.google.com/drive/u/1/folders/1hAZiGrAGQDDZfhPLWfVyi6htjqspkFq
-  /: https://adobe.sharepoint.com/sites/AEMNewsletter/Shared%20Documents/
+  /: https://adobe.sharepoint.com/sites/AEMNewsletter/Shared%20Documents/content
