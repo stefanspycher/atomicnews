@@ -173,7 +173,7 @@
 .news-container.list-view .article-content,
 .news-container.list-view .article-content > div,
 .news-container.list-view .article-content p {
-  max-width: none;
+  max-width: fit-content;
   width: 100%;
 }
 
